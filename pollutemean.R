@@ -13,7 +13,7 @@ pollutantmean <- function(directory, pollutant, id = 1:332) {
   #List files in the directory
   filelisting <- list.files(directoryName)
   idval <- length(filelisting[id]) #Get the vector length
-  mondata <- numeric(idval)
+  mondata <- vector()
   
   #Process multiple id monitor data files
   if(idval > 1){
