@@ -7,8 +7,8 @@ setwd("c:/specdata")
 
 conditions <- list("heart attack", "heart failure", "pneumonia")
 
-#rankhospitals <- vector("character")
-#rankstates <- vector("character")
+rankhospitals <- vector()
+rankstates <- vector()
 
 rankall <- function(outcome, num = "best") {
         #Validate outome before proceeding
@@ -37,8 +37,7 @@ rankall <- function(outcome, num = "best") {
         #####################################################
         # Get best mortality for HEART ATTACK               #
         #####################################################
-        rankhospitals <- vector()
-        rankstates <- vector()
+        
         if(outcome == "heart attack"){          
                 
                 #Get Hospital Name, State and Heart Attack data from data frame
@@ -58,10 +57,6 @@ rankall <- function(outcome, num = "best") {
                    rankstates <- c(rankstates,stateStorage[i])
                 }
                 #Create the data frame 
-                ranks <- data.frame()
-                #print(head(rankhospitals,4))
-                #print(head(rankstates,4))
-                
                 ranks <- data.frame(hospital=rankhospitals, state=rankstates)
                         
         }
@@ -70,8 +65,7 @@ rankall <- function(outcome, num = "best") {
         #####################################################
         # Get best mortality for HEART FAILURE              #
         #####################################################
-        rankhospitals <- vector("character")
-        rankstates <- vector("character")
+        
         if(outcome == "heart failure"){
                 #Get Hospital Name, State and Heart Failure data from data frame
                 heartFailDf <- hosp.data[1:hosp.rows,c(2,7,17)] 
@@ -101,8 +95,7 @@ rankall <- function(outcome, num = "best") {
         #####################################################
         # Get best mortality for PNEUMONIA                  #
         #####################################################
-        rankhospitals <- vector()
-        rankstates <- vector()
+        
         if(outcome == "pneumonia"){
                 #Get Hospital Name, State and Pneumonia column data from data frame
                 pneumoniaDf <- hosp.data[1:hosp.rows,c(2,7,23)] 
