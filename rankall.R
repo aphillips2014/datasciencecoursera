@@ -7,9 +7,14 @@ setwd("c:/specdata")
 
 conditions <- list("heart attack", "heart failure", "pneumonia")
 
-rankhospitals <- vector()
-rankstates <- vector()
+rankhospitals <- vector("character")
+rankstates <- vector("character")
 
+###############################################################
+# rankall - return ranked hospitals and states                #
+#                                                             #
+#                                                             #
+###############################################################
 rankall <- function(outcome, num = "best") {
         #Validate outome before proceeding
         vald <- FALSE
@@ -38,89 +43,80 @@ rankall <- function(outcome, num = "best") {
         # Get best mortality for HEART ATTACK               #
         #####################################################
         
-        if(outcome == "heart attack"){          
-                
-                #Get Hospital Name, State and Heart Attack data from data frame
-                heartAttackDf <- hosp.data[1:hosp.rows,c(2,7,11)] 
-               
-                for (i in 1:length(stateStorage)){
-                   #Get all row index that match the state 
-                   heartAttackByState <- heartAttackDf[which(heartAttackDf[,"State"] == stateStorage[i]),]
-                   
-                   #Subset the heart attack dataframe and remove NA's from Heart Attack column(i.e. col 3 all rows)
-                   heartAttackNoNaDf <- subset(heartAttackByState,  heartAttackByState[,3] != "NA") 
-                   
-                   orderit <- heartAttackNoNaDf[order(heartAttackNoNaDf$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack),]
-                   orderit <- processRates(orderit, heartAttackNoNaDf, num, outcome)
-                   
-                   rankhospitals <- c(rankhospitals,orderit[1])
-                   rankstates <- c(rankstates,stateStorage[i])
-                }
-                #Create the data frame 
-                ranks <- data.frame(hospital=rankhospitals, state=rankstates)
+        if(outcome == "heart attack"){      
+                outcome.column.name = "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack"
+                ranks <- processOutcome(outcome, hosp.data, hosp.rows, c(2,7,11), stateStorage, outcome.column.name, num)          
                         
         }
-        
         
         #####################################################
         # Get best mortality for HEART FAILURE              #
         #####################################################
         
-        if(outcome == "heart failure"){
-                #Get Hospital Name, State and Heart Failure data from data frame
-                heartFailDf <- hosp.data[1:hosp.rows,c(2,7,17)] 
+        if(outcome == "heart failure"){      
+                outcome.column.name = "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure"
+                ranks <- processOutcome(outcome, hosp.data, hosp.rows, c(2,7,17), stateStorage, outcome.column.name, num)          
                 
-              for (i in 1:length(stateStorage)){        
-                #Get all row index that match the state 
-                heartFailByState <- heartFailDf[which(heartFailDf[,"State"] == stateStorage[i]),]
-                
-                #Subset the heart attack dataframe and remove NA's from Heart Attack column(i.e. col 3 all rows)
-                heartFailNoNaDf <- subset(heartFailByState,  heartFailByState[,3] != "NA") 
-               
-                orderit <- heartFailNoNaDf[order(heartFailNoNaDf$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure),] 
-                
-                orderit <- processRates(orderit, heartFailNoNaDf, num, outcome)
-                
-                rankhospitals <- c(rankhospitals,orderit)
-                rankstates <- c(rankstates,stateStorage[i])
-              }
-             
-              #Create the data frame 
-              ranks <- data.frame(hospital=rankhospitals, state=rankstates)  
-              
-           
         }
-        
         
         #####################################################
         # Get best mortality for PNEUMONIA                  #
         #####################################################
         
-        if(outcome == "pneumonia"){
-                #Get Hospital Name, State and Pneumonia column data from data frame
-                pneumoniaDf <- hosp.data[1:hosp.rows,c(2,7,23)] 
+        if(outcome == "pneumonia"){      
+                outcome.column.name = "Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia"
+                ranks <- processOutcome(outcome, hosp.data, hosp.rows, c(2,7,23), stateStorage, outcome.column.name, num)          
                 
-             for (i in 1:length(stateStorage)){        
-               
-                #Subset the dataframe and get all vertical rows from the data frame for a particular index that match the state 
-                pneumoniaByState <- pneumoniaDf[which(pneumoniaDf[,"State"] == stateStorage[i]),]
-                
-                #Subset the heart attack dataframe and remove NA's from Heart Attack column(i.e. col 3 all rows)
-                pneumoniaNoNaDf <- subset(pneumoniaByState,  pneumoniaByState[,3] != "NA") 
-               
-                orderit <- pneumoniaNoNaDf[order(pneumoniaNoNaDf$Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia),]   
-                
-                orderit <- processRates(orderit, pneumoniaNoNaDf, num, outcome)
-                rankhospitals <- c(rankhospitals,orderit[1])
-                rankstates <- c(rankstates,stateStorage[i])
-             }
-             #Create the data frame 
-             ranks <- data.frame(hospital=rankhospitals, state=rankstates) 
-             
         }
         
-        
         return(ranks)
+}
+
+#####################################################################
+#processOutcome
+#Return the rankings of the hospitals and number
+#####################################################################
+processOutcome <- function(outcome, hospdata, hosprows, colvect, numstates, columnname, num, ... ){
+        
+        
+                #Get Hospital Name, State and Pneumonia column data from data frame
+                outcomeDf <- hospdata[1:hosprows,colvect] 
+                
+                for (i in 1:length(numstates)){        
+                        
+                        #Subset the dataframe and get all vertical rows from the data frame for a particular index that match the state 
+                        outcomeByState <- outcomeDf[which(outcomeDf[,"State"] == numstates[i]),]
+                        
+                        #Subset the heart attack dataframe and ignore rows with NA's from Heart Attack column(i.e. col 3 all rows)
+                        outcomeNoNaDf <- subset(outcomeByState,  outcomeByState[,3] != "NA") 
+                        
+                        if(outcome == "pneumonia")
+                           #Order the data
+                           orderit <- outcomeNoNaDf[order(outcomeNoNaDf$Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia),]  
+                        
+                        if(outcome == "heart failure")
+                           #Order the data
+                           orderit <- outcomeNoNaDf[order(outcomeNoNaDf$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure),]
+                        
+                        if(outcome == "heart attack"){
+                           #Order the data by the Heart Attack column
+                           orderit <- outcomeNoNaDf[order(outcomeNoNaDf$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack),]
+                        }
+                        
+                        #Process the data and get the value with the rating based on the num value
+                        orderit <- processRates(orderit, outcomeNoNaDf, num, outcome)
+                        
+                        #Store ranked hospitals
+                        rankhospitals <- c(rankhospitals,orderit[1])
+                        
+                        #Store corresponding ranked states
+                        rankstates <- c(rankstates,numstates[i])
+                }
+                
+                #Create the data frame with ranked hospitals and the corresponding state to screen
+                #replaced the values in row.names with the rankstates ************REMEMBER THIS ***************
+                ranks <- data.frame(row.names=rankstates, hospital=rankhospitals, state=rankstates) 
+        
 }
 
 ####################################################################
@@ -137,7 +133,7 @@ processRates <- function(dfObj1,dfObj2, num, conditionType){
         hfrows <- nrow(dfObj1)
         
         if(num == "best"){
-                #Get the hospital with the lowest rating which is in first position of dataframe
+                #Get the hospital with the lowest(best) rating which is in first position of dataframe
                 dfObj1 <- dfObj1[1,1]        
                 
         }else if(num == "worst"){
@@ -145,6 +141,8 @@ processRates <- function(dfObj1,dfObj2, num, conditionType){
                 dfObj1 <- dfObj1[hfrows,1]        
                 
         }else if(is.numeric(num)){
+                #Get a ranking by passing in a numeric value and check against the data
+                
                 #Check if the num passed in for ranking is greater than the number of hospitals in our list
                 #if so than print NA
                 if(num > hfrows){
@@ -152,7 +150,10 @@ processRates <- function(dfObj1,dfObj2, num, conditionType){
                 }else{
                         #Check the ratings column to see if any identical ratings     
                         duprates <- head(dfObj1[,3],num)
+                        
+                        #Get duplicate vector length
                         mylen <- length(duprates[duplicated(duprates)])
+                        
                         if(mylen >= 1){
                                 #We have identical ratings for the listing so break the tie and order by Hospital.Name
                                 if(conditionType == "heart failure"){
